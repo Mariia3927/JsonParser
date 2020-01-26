@@ -2,11 +2,10 @@
 //
 
 #include "pch.h"
-#include <iostream>
 
 int main()
 {
-	JsonObject json("{ {\"listOfBool\" : [true, false, true, false]},  {\"listOfDouble\" : [1.1, 0.5, 2.3, 7.8, 9.5]}, {\"nullValue\" : NULL}, {\"boolTrue\" : true}, {\"boolFalse\" : false}, {\"integer\" : 10}, {\"listOfStrings\" : [\"one\", \"two\", \"three\"]}, {\"pi\" : 3.141}, {\"name\" : \"Niels\"}, {\"listOfInts\" : [1, 0, 2]}};");
+	JsonObject json("{ {\"listOfBool\" : [true, false, true, false]},  {\"listOfDouble\" : [1.1, 0.5, 2.3, 7.8, 9.5]}, {\"nullValue\" : NULL}, {\"boolTrue\" : true}, {\"boolFalse\" : false}, {\"integer\" : 10}, {\"listOfStrings\" : [\"one\", \"two\", \"three\"]}, {\"pi\" : 3.141}, {\"name\" : \"Niels\"}, {\"listOfInts\" : [1, 0, 2]}, {\"object\": { {\"currency\": \"USD\"}, {\"value\": 42.99} } };");
 
 	std::cout << json.Dump() << '\n';
 }

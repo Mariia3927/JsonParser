@@ -14,7 +14,6 @@
 #include <map>
 #include <algorithm>
 #include <vector>
-#include <memory>
 
 enum JsonValueType
 {

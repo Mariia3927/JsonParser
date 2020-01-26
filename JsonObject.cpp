@@ -90,12 +90,12 @@ JsonValue JsonObject::ParseValue(const std::string & str, std::string::const_ite
 			++curIter;
 			return ParseArray(str, curIter);
 		}
-		/*else if (*curIter == '{')
+		else if (*curIter == '{')
 		{
 			JsonValue jsonObject;
 			jsonObject.SetObject(ParseObject(str, curIter));
 			return jsonObject;
-		}*/
+		}
 	}
 }
 
