@@ -3,25 +3,25 @@
 
 JsonObject::JsonObject(const std::string& str)
 {
-	m_object = ParseObject(str, *&str.begin());
+	ParseObject(str, *&str.begin());
 }
 
-std::map<std::string, JsonValue> JsonObject::ParseObject(const std::string & str, std::string::const_iterator& curIter)
+void JsonObject::ParseObject(const std::string & str, std::string::const_iterator& curIter)
 {
 	std::string key = "";
 	JsonValue value;
 	std::map<std::string, JsonValue> json{};
 
-	while (*curIter == ' ') { ++curIter; }
+	SkipSpaces(curIter);
 
 	if (*curIter == '{')
 	{
 		++curIter;
-		while (*curIter == ' ') { ++curIter; }
+		SkipSpaces(curIter);
 
 		while (curIter < str.end() && *curIter != '}')
 		{
-			while (*curIter == ' ') { ++curIter; }
+			SkipSpaces(curIter);
 
 			if (*curIter == '{')
 			{
@@ -36,23 +36,23 @@ std::map<std::string, JsonValue> JsonObject::ParseObject(const std::string & str
 				json[key] = value;
 			}
 
-			while (*curIter == ' ') { ++curIter; }
+			SkipSpaces(curIter);
 
 			if (*curIter == '}')
 			{
 				++curIter;
-				while (*curIter == ' ') { ++curIter; }
+				SkipSpaces(curIter);
 			}
-				
+
 			if (*curIter == ',')
 			{
 				++curIter;
-				while (*curIter == ' ') { ++curIter; }
+				SkipSpaces(curIter);
 			}
 		}
 	}
 
-	return json;
+	m_object = json;
 }
 
 JsonValue JsonObject::ParseValue(const std::string & str, std::string::const_iterator& curIter)
@@ -93,7 +93,8 @@ JsonValue JsonObject::ParseValue(const std::string & str, std::string::const_ite
 		else if (*curIter == '{')
 		{
 			JsonValue jsonObject;
-			jsonObject.SetObject(ParseObject(str, curIter));
+			ParseObject(str, curIter);
+			jsonObject.SetObject(m_object);
 			return jsonObject;
 		}
 	}
@@ -142,7 +143,7 @@ bool JsonObject::ParseBool(const std::string & str, std::string::const_iterator&
 
 JsonValue JsonObject::ParseArray(const std::string & str, std::string::const_iterator& curIter) const
 {
-	while (*curIter == ' ') { ++curIter; }
+	SkipSpaces(curIter);
 
 	while (curIter != str.end() && *curIter != ']')
 	{
@@ -173,12 +174,12 @@ JsonValue JsonObject::ParseNumericArray(const std::string & str, std::string::co
 		value = ParseNumericValue(str, curIter, isDoubleArray);
 		isDoubleArray == true ? vecOfDouble.push_back(atof(value.c_str())) : vecOfInt.push_back(atoi(value.c_str()));
 
-		while (*curIter == ' ') { ++curIter; }
+		SkipSpaces(curIter);
 
 		if (*curIter == ',')
 		{
 			++curIter;
-			while (*curIter == ' ') { ++curIter; }
+			SkipSpaces(curIter);
 		}
 	}
 	++curIter;
@@ -194,15 +195,15 @@ JsonValue JsonObject::ParseStringArray(const std::string & str, std::string::con
 	while (*curIter != ']')
 	{
 		strValue = ParseString(str, curIter);
-		
+
 		vecOfStr.push_back(strValue);
 
-		while (*curIter == ' ') { ++curIter; }
+		SkipSpaces(curIter);
 
 		if (*curIter == ',')
 		{
 			++curIter;
-			while (*curIter == ' ') { ++curIter; }
+			SkipSpaces(curIter);
 		}
 	}
 	++curIter;
@@ -244,6 +245,14 @@ std::string JsonObject::ParseString(const std::string & str, std::string::const_
 	return result;
 }
 
+void JsonObject::SkipSpaces(std::string::const_iterator & curIter) const
+{
+	while (*curIter == ' ')
+	{
+		++curIter;
+	}
+}
+
 JsonObject & JsonObject::operator=(const JsonObject & object)
 {
 	if (this == &object)
@@ -252,6 +261,16 @@ JsonObject & JsonObject::operator=(const JsonObject & object)
 	m_object = object.m_object;
 
 	return *this;
+}
+
+JsonValue& JsonObject::operator[](const std::string& key)
+{
+	return m_object[key];
+}
+
+JsonValue JsonObject::at(const std::string& key)
+{
+	return m_object[key];
 }
 
 void JsonObject::PushBack(const std::string & key, const JsonValue & value)

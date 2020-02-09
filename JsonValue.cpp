@@ -94,7 +94,7 @@ std::string JsonValue::GetStringFromVectorOfInt() const
 	std::string result = "[ ";
 	std::for_each(m_vectorOfInt.begin(), m_vectorOfInt.end() - 1, [&](int val) { result += std::to_string(val) + ", "; });
 	result += std::to_string(*(m_vectorOfInt.end() - 1)) + " ]";
-	
+
 	return result;
 }
 

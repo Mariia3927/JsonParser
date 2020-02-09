@@ -14,8 +14,8 @@ public:
 	JsonObject& operator=(const JsonObject& object);
 	~JsonObject() {}
 
-	JsonValue& operator[](const std::string& key) { return m_object[key]; }
-	JsonValue at(const std::string& key) { return m_object[key]; }
+	JsonValue& operator[](const std::string& key);
+	JsonValue at(const std::string& key);
 
 	void PushBack(const std::string& key, const JsonValue& value);
 	size_t Size() const { return m_object.size(); }
@@ -23,7 +23,7 @@ public:
 	std::string Dump() const;
 
 private:
-	std::map<std::string, JsonValue> ParseObject(const std::string& str, std::string::const_iterator& curIter);
+	void ParseObject(const std::string& str, std::string::const_iterator& curIter);
 	JsonValue ParseValue(const std::string& str, std::string::const_iterator& curIter);
 	std::string ParseNumericValue(const std::string& str, std::string::const_iterator& curIter, bool& isDoubleValue) const;
 	bool ParseBool(const std::string& str, std::string::const_iterator& curIter) const;
@@ -33,7 +33,8 @@ private:
 	JsonValue ParseBoolArray(const std::string& str, std::string::const_iterator& curIter) const;
 	std::string ParseString(const std::string& str, std::string::const_iterator& curIter) const;
 
+	void SkipSpaces(std::string::const_iterator& curIter) const;
+
 private:
 	std::map<std::string, JsonValue> m_object{};
 };
-
