@@ -10,10 +10,10 @@ void JsonObject::ParseObject(const std::string & str, std::string::const_iterato
 {
 	std::string key = "";
 	JsonValue value;
-	std::map<std::string, JsonValue> json {};
+	std::map<std::string, JsonValue> json{};
 
 	SkipSpaces(curIter);
-	
+
 	if (*curIter == '{')
 	{
 		++curIter;
@@ -43,7 +43,7 @@ void JsonObject::ParseObject(const std::string & str, std::string::const_iterato
 				++curIter;
 				SkipSpaces(curIter);
 			}
-				
+
 			if (*curIter == ',')
 			{
 				++curIter;
@@ -68,7 +68,8 @@ JsonValue JsonObject::ParseValue(const std::string & str, std::string::const_ite
 		{
 			bool isDoubleValue = false;
 			value = ParseNumericValue(str, curIter, isDoubleValue);
-			return isDoubleValue == true ? JsonValue(atof(value.c_str())) : JsonValue(atoi(value.c_str()));
+
+			return isDoubleValue ? JsonValue(atof(value.c_str())) : JsonValue(atoi(value.c_str()));
 		}
 		else if (*curIter == '"')
 		{
@@ -83,11 +84,13 @@ JsonValue JsonObject::ParseValue(const std::string & str, std::string::const_ite
 		else if (isalnum(*curIter))
 		{
 			bool result = ParseBool(str, curIter);
-			return result == true ? JsonValue(true) : JsonValue(false);
+
+			return result ? JsonValue(true) : JsonValue(false);
 		}
 		else if (*curIter == '[')
 		{
 			++curIter;
+
 			return ParseArray(str, curIter);
 		}
 		else if (*curIter == '{')
@@ -95,6 +98,7 @@ JsonValue JsonObject::ParseValue(const std::string & str, std::string::const_ite
 			JsonValue jsonObject;
 			ParseObject(str, curIter);
 			jsonObject.SetObject(m_object);
+
 			return jsonObject;
 		}
 	}
@@ -132,11 +136,13 @@ bool JsonObject::ParseBool(const std::string & str, std::string::const_iterator&
 	if (*curIter == 't')
 	{
 		curIter += trueLength;
+
 		return true;
 	}
 	else
 	{
 		curIter += falseLength;
+
 		return false;
 	}
 }
@@ -159,6 +165,9 @@ JsonValue JsonObject::ParseArray(const std::string & str, std::string::const_ite
 		{
 			return ParseBoolArray(str, curIter);
 		}
+		else {
+			return JsonValue(Null);
+		}
 	}
 }
 
@@ -172,7 +181,7 @@ JsonValue JsonObject::ParseNumericArray(const std::string & str, std::string::co
 	while (*curIter != ']')
 	{
 		value = ParseNumericValue(str, curIter, isDoubleArray);
-		isDoubleArray == true ? vecOfDouble.push_back(atof(value.c_str())) : vecOfInt.push_back(atoi(value.c_str()));
+		isDoubleArray ? vecOfDouble.push_back(atof(value.c_str())) : vecOfInt.push_back(atoi(value.c_str()));
 
 		SkipSpaces(curIter);
 
@@ -184,7 +193,7 @@ JsonValue JsonObject::ParseNumericArray(const std::string & str, std::string::co
 	}
 	++curIter;
 
-	return isDoubleArray == true ? JsonValue(vecOfDouble) : JsonValue(vecOfInt);
+	return isDoubleArray ? JsonValue(vecOfDouble) : JsonValue(vecOfInt);
 }
 
 JsonValue JsonObject::ParseStringArray(const std::string & str, std::string::const_iterator& curIter) const
@@ -195,7 +204,7 @@ JsonValue JsonObject::ParseStringArray(const std::string & str, std::string::con
 	while (*curIter != ']')
 	{
 		strValue = ParseString(str, curIter);
-		
+
 		vecOfStr.push_back(strValue);
 
 		SkipSpaces(curIter);
@@ -219,12 +228,12 @@ JsonValue JsonObject::ParseBoolArray(const std::string & str, std::string::const
 	while (*curIter != ']')
 	{
 		vecOfBool.push_back(ParseBool(str, curIter));
-		while (*curIter == ' ') { ++curIter; }
+		SkipSpaces(curIter);
 
 		if (*curIter == ',')
 		{
 			++curIter;
-			while (*curIter == ' ') { ++curIter; }
+			SkipSpaces(curIter);
 		}
 	}
 	++curIter;
@@ -247,30 +256,20 @@ std::string JsonObject::ParseString(const std::string & str, std::string::const_
 
 void JsonObject::SkipSpaces(std::string::const_iterator & curIter) const
 {
-	while (*curIter == ' ') 
-	{ 
-		++curIter; 
+	while (*curIter == ' ')
+	{
+		++curIter;
 	}
 }
 
-/*JsonObject & JsonObject::operator=(const JsonObject & object)
+JsonValue& JsonObject::operator[](const std::string& key)
 {
-	if (this == &object)
-		return *this;
-
-	m_object = object.m_object;
-
-	return *this;
-}*/
-
-JsonValue& JsonObject::operator[](const std::string& key) 
-{ 
-	return m_object[key]; 
+	return m_object[key];
 }
 
-JsonValue JsonObject::at(const std::string& key) 
-{ 
-	return m_object[key]; 
+JsonValue JsonObject::at(const std::string& key)
+{
+	return m_object[key];
 }
 
 void JsonObject::PushBack(const std::string & key, const JsonValue & value)
@@ -282,12 +281,11 @@ std::string JsonObject::Dump() const
 {
 	std::string result = "{ ";
 
-	for (std::map<std::string, JsonValue>::const_iterator iter = m_object.begin(); iter != m_object.end(); iter++)
-	{
-		result += "\n{ \"" + iter->first + "\" : " + iter->second.GetStringRepresentationOfValue();
-		result += iter == --m_object.end() ? " }\n" : " },\n";
-	}
-	result += "};";
+	std::for_each(m_object.begin(), m_object.end(), [&](std::string key, JsonValue value)
+	{ result += "\n{ \"" + key + "\" : " + value.GetStringRepresentationOfValue() + " }\n"; });
+
+	result += " };";
 
 	return result;
 }
+

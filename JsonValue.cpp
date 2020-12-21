@@ -2,60 +2,25 @@
 #include "JsonValue.h"
 
 
-JsonValue::JsonValue(const JsonValue & object) : m_type(object.m_type)
+JsonValue::JsonValue()
 {
 	SetDefaultValues();
-	switch (m_type)
-	{
-	case Int:
-		m_int = object.m_int;
-	case Double:
-		m_double = object.m_double;
-	case String:
-		m_string = object.m_string;
-	case Bool:
-		m_bool = object.m_bool;
-	case Array_Int:
-		m_vectorOfInt = object.m_vectorOfInt;
-	case Array_Double:
-		m_vectorOfDouble = object.m_vectorOfDouble;
-	case Array_String:
-		m_vectorOfString = object.m_vectorOfString;
-	case Array_Bool:
-		m_vectorOfBool = object.m_vectorOfBool;
-	case Object:
-		m_object = object.m_object;
-	}
+}
+
+JsonValue::JsonValue(const JsonValue & object) : m_type(object.m_type)
+{
+	setValueByType(object);
 }
 
 JsonValue & JsonValue::operator=(const JsonValue & object)
 {
 	if (this == &object)
-		return *this;
-
-	SetDefaultValues();
-	m_type = object.m_type;
-	switch (m_type)
 	{
-	case Int:
-		m_int = object.m_int;
-	case Double:
-		m_double = object.m_double;
-	case String:
-		m_string = object.m_string;
-	case Bool:
-		m_bool = object.m_bool;
-	case Array_Int:
-		m_vectorOfInt = object.m_vectorOfInt;
-	case Array_Double:
-		m_vectorOfDouble = object.m_vectorOfDouble;
-	case Array_String:
-		m_vectorOfString = object.m_vectorOfString;
-	case Array_Bool:
-		m_vectorOfBool = object.m_vectorOfBool;
-	case Object:
-		m_object = object.m_object;
+		return *this;
 	}
+
+	m_type = object.m_type;
+	setValueByType(object);
 
 	return *this;
 }
@@ -89,12 +54,19 @@ std::string JsonValue::GetStringRepresentationOfValue() const
 	}
 }
 
+void JsonValue::SetObject(const std::map<std::string, JsonValue>& map)
+{
+	SetDefaultValues();
+	m_type = Object;
+	m_object = map;
+}
+
 std::string JsonValue::GetStringFromVectorOfInt() const
 {
 	std::string result = "[ ";
 	std::for_each(m_vectorOfInt.begin(), m_vectorOfInt.end() - 1, [&](int val) { result += std::to_string(val) + ", "; });
 	result += std::to_string(*(m_vectorOfInt.end() - 1)) + " ]";
-	
+
 	return result;
 }
 
@@ -137,4 +109,43 @@ void JsonValue::SetDefaultValues()
 	m_vectorOfString = {};
 	m_vectorOfBool = {};
 }
+
+void JsonValue::setValueByType(const JsonValue& object)
+{
+	SetDefaultValues();
+
+	switch (object.m_type)
+	{
+	case Int:
+		m_int = object.m_int;
+		break;
+	case Double:
+		m_double = object.m_double;
+		break;
+	case String:
+		m_string = object.m_string;
+		break;
+	case Bool:
+		m_bool = object.m_bool;
+		break;
+	case Array_Int:
+		m_vectorOfInt = object.m_vectorOfInt;
+		break;
+	case Array_Double:
+		m_vectorOfDouble = object.m_vectorOfDouble;
+		break;
+	case Array_String:
+		m_vectorOfString = object.m_vectorOfString;
+		break;
+	case Array_Bool:
+		m_vectorOfBool = object.m_vectorOfBool;
+		break;
+	case Object:
+		m_object = object.m_object;
+		break;
+	default:
+		break;
+	}
+}
+
 
