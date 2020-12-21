@@ -1,0 +1,291 @@
+#include "pch.h"
+#include "JsonObject.h"
+
+JsonObject::JsonObject(const std::string& str)
+{
+	ParseObject(str, *&str.begin());
+}
+
+void JsonObject::ParseObject(const std::string & str, std::string::const_iterator& curIter)
+{
+	std::string key = "";
+	JsonValue value;
+	std::map<std::string, JsonValue> json{};
+
+	SkipSpaces(curIter);
+
+	if (*curIter == '{')
+	{
+		++curIter;
+		SkipSpaces(curIter);
+
+		while (curIter < str.end() && *curIter != '}')
+		{
+			SkipSpaces(curIter);
+
+			if (*curIter == '{')
+			{
+				++curIter;
+				key = ParseString(str, curIter);
+
+				curIter = std::find(curIter, str.end(), ':');
+				++curIter;
+
+				value = ParseValue(str, curIter);
+
+				json[key] = value;
+			}
+
+			SkipSpaces(curIter);
+
+			if (*curIter == '}')
+			{
+				++curIter;
+				SkipSpaces(curIter);
+			}
+
+			if (*curIter == ',')
+			{
+				++curIter;
+				SkipSpaces(curIter);
+			}
+		}
+	}
+
+	m_object = json;
+}
+
+JsonValue JsonObject::ParseValue(const std::string & str, std::string::const_iterator& curIter)
+{
+	std::string value = "";
+
+	while (curIter < str.end() && *curIter != '}')
+	{
+		if (*curIter == ' ')
+			++curIter;
+
+		if (isdigit(*curIter))
+		{
+			bool isDoubleValue = false;
+			value = ParseNumericValue(str, curIter, isDoubleValue);
+
+			return isDoubleValue ? JsonValue(atof(value.c_str())) : JsonValue(atoi(value.c_str()));
+		}
+		else if (*curIter == '"')
+		{
+			return JsonValue(ParseString(str, curIter));
+		}
+		else if (tolower(*curIter) == 'n')
+		{
+			while (isalnum(*curIter++)) {}
+
+			return JsonValue(Null);
+		}
+		else if (isalnum(*curIter))
+		{
+			bool result = ParseBool(str, curIter);
+
+			return result ? JsonValue(true) : JsonValue(false);
+		}
+		else if (*curIter == '[')
+		{
+			++curIter;
+
+			return ParseArray(str, curIter);
+		}
+		else if (*curIter == '{')
+		{
+			JsonValue jsonObject;
+			ParseObject(str, curIter);
+			jsonObject.SetObject(m_object);
+
+			return jsonObject;
+		}
+	}
+}
+
+std::string JsonObject::ParseNumericValue(const std::string & str, std::string::const_iterator& curIter, bool& isDoubleValue) const
+{
+	std::string value = "";
+	std::string::const_iterator tmpIter = curIter;
+
+	while (isdigit(*curIter))
+	{
+		value += *curIter++;
+	}
+
+	if (*curIter == '.')
+	{
+		value += *curIter;
+		isDoubleValue = true;
+		++curIter;
+	}
+
+	while (isdigit(*curIter))
+	{
+		value += *curIter++;
+	}
+
+	return value;
+}
+
+bool JsonObject::ParseBool(const std::string & str, std::string::const_iterator& curIter) const
+{
+	int trueLength = 4, falseLength = 5;
+
+	if (*curIter == 't')
+	{
+		curIter += trueLength;
+
+		return true;
+	}
+	else
+	{
+		curIter += falseLength;
+
+		return false;
+	}
+}
+
+JsonValue JsonObject::ParseArray(const std::string & str, std::string::const_iterator& curIter) const
+{
+	SkipSpaces(curIter);
+
+	while (curIter != str.end() && *curIter != ']')
+	{
+		if (isdigit(*curIter))
+		{
+			return ParseNumericArray(str, curIter);
+		}
+		else if (*curIter == '"')
+		{
+			return ParseStringArray(str, curIter);
+		}
+		else if (isalnum(*curIter))
+		{
+			return ParseBoolArray(str, curIter);
+		}
+		else {
+			return JsonValue(Null);
+		}
+	}
+}
+
+JsonValue JsonObject::ParseNumericArray(const std::string & str, std::string::const_iterator& curIter) const
+{
+	std::string value = "";
+	bool isDoubleArray = false;
+	std::vector<int> vecOfInt{};
+	std::vector<double> vecOfDouble{};
+
+	while (*curIter != ']')
+	{
+		value = ParseNumericValue(str, curIter, isDoubleArray);
+		isDoubleArray ? vecOfDouble.push_back(atof(value.c_str())) : vecOfInt.push_back(atoi(value.c_str()));
+
+		SkipSpaces(curIter);
+
+		if (*curIter == ',')
+		{
+			++curIter;
+			SkipSpaces(curIter);
+		}
+	}
+	++curIter;
+
+	return isDoubleArray ? JsonValue(vecOfDouble) : JsonValue(vecOfInt);
+}
+
+JsonValue JsonObject::ParseStringArray(const std::string & str, std::string::const_iterator& curIter) const
+{
+	std::vector<std::string> vecOfStr{};
+	std::string strValue = "";
+
+	while (*curIter != ']')
+	{
+		strValue = ParseString(str, curIter);
+
+		vecOfStr.push_back(strValue);
+
+		SkipSpaces(curIter);
+
+		if (*curIter == ',')
+		{
+			++curIter;
+			SkipSpaces(curIter);
+		}
+	}
+	++curIter;
+
+	return JsonValue(vecOfStr);
+}
+
+JsonValue JsonObject::ParseBoolArray(const std::string & str, std::string::const_iterator& curIter) const
+{
+	bool value = false;
+	std::vector<bool> vecOfBool{};
+
+	while (*curIter != ']')
+	{
+		vecOfBool.push_back(ParseBool(str, curIter));
+		SkipSpaces(curIter);
+
+		if (*curIter == ',')
+		{
+			++curIter;
+			SkipSpaces(curIter);
+		}
+	}
+	++curIter;
+
+	return JsonValue(vecOfBool);
+}
+
+std::string JsonObject::ParseString(const std::string & str, std::string::const_iterator& curIter) const
+{
+	std::string::const_iterator tmpIter = curIter;
+
+	tmpIter = curIter = std::find(curIter, str.end(), '\"');
+	curIter = std::find(++curIter, str.end(), '\"');
+
+	std::string result = std::string(++tmpIter, curIter);
+	++curIter;
+
+	return result;
+}
+
+void JsonObject::SkipSpaces(std::string::const_iterator & curIter) const
+{
+	while (*curIter == ' ')
+	{
+		++curIter;
+	}
+}
+
+JsonValue& JsonObject::operator[](const std::string& key)
+{
+	return m_object[key];
+}
+
+JsonValue JsonObject::at(const std::string& key)
+{
+	return m_object[key];
+}
+
+void JsonObject::PushBack(const std::string & key, const JsonValue & value)
+{
+	m_object[key] = value;
+}
+
+std::string JsonObject::Dump() const
+{
+	std::string result = "{ ";
+
+	std::for_each(m_object.begin(), m_object.end(), [&](std::string key, JsonValue value)
+	{ result += "\n{ \"" + key + "\" : " + value.GetStringRepresentationOfValue() + " }\n"; });
+
+	result += " };";
+
+	return result;
+}
+
