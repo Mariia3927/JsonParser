@@ -9,9 +9,9 @@ public:
 	JsonObject() {}
 	explicit JsonObject(const std::string& str);
 	explicit JsonObject(const std::map<std::string, JsonValue>& map) : m_object(map) {}
-	JsonObject(const JsonObject& object) : m_object(object.m_object) {}
+	//JsonObject(const JsonObject& object) : m_object(object.m_object) {}
 
-	JsonObject& operator=(const JsonObject& object);
+	//JsonObject& operator=(const JsonObject& object);
 	~JsonObject() {}
 
 	JsonValue& operator[](const std::string& key);
@@ -38,3 +38,4 @@ private:
 private:
 	std::map<std::string, JsonValue> m_object{};
 };
+

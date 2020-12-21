@@ -10,10 +10,10 @@ void JsonObject::ParseObject(const std::string & str, std::string::const_iterato
 {
 	std::string key = "";
 	JsonValue value;
-	std::map<std::string, JsonValue> json{};
+	std::map<std::string, JsonValue> json {};
 
 	SkipSpaces(curIter);
-
+	
 	if (*curIter == '{')
 	{
 		++curIter;
@@ -43,7 +43,7 @@ void JsonObject::ParseObject(const std::string & str, std::string::const_iterato
 				++curIter;
 				SkipSpaces(curIter);
 			}
-
+				
 			if (*curIter == ',')
 			{
 				++curIter;
@@ -195,7 +195,7 @@ JsonValue JsonObject::ParseStringArray(const std::string & str, std::string::con
 	while (*curIter != ']')
 	{
 		strValue = ParseString(str, curIter);
-
+		
 		vecOfStr.push_back(strValue);
 
 		SkipSpaces(curIter);
@@ -247,13 +247,13 @@ std::string JsonObject::ParseString(const std::string & str, std::string::const_
 
 void JsonObject::SkipSpaces(std::string::const_iterator & curIter) const
 {
-	while (*curIter == ' ')
-	{
-		++curIter;
+	while (*curIter == ' ') 
+	{ 
+		++curIter; 
 	}
 }
 
-JsonObject & JsonObject::operator=(const JsonObject & object)
+/*JsonObject & JsonObject::operator=(const JsonObject & object)
 {
 	if (this == &object)
 		return *this;
@@ -261,16 +261,16 @@ JsonObject & JsonObject::operator=(const JsonObject & object)
 	m_object = object.m_object;
 
 	return *this;
+}*/
+
+JsonValue& JsonObject::operator[](const std::string& key) 
+{ 
+	return m_object[key]; 
 }
 
-JsonValue& JsonObject::operator[](const std::string& key)
-{
-	return m_object[key];
-}
-
-JsonValue JsonObject::at(const std::string& key)
-{
-	return m_object[key];
+JsonValue JsonObject::at(const std::string& key) 
+{ 
+	return m_object[key]; 
 }
 
 void JsonObject::PushBack(const std::string & key, const JsonValue & value)
